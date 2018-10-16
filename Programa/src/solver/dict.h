@@ -1,11 +1,9 @@
-typedef struct dict *Dict;
+typedef struct hashTable *HashTable;
 
-Dict DictCreate(void);
+HashTable HashTableCreate(void);
 
-void DictDestroy(Dict);
+void HashTableDestroy(HashTable);
 
-void DictInsert(Dict, const char *key);
+void HashTableInsert(HashTable, const char *key);
 
-bool DictSearch(Dict, const char *key);
-
-void DictDelete(Dict, const char *key);
+bool HashTableSearch(HashTable, const char *key);
