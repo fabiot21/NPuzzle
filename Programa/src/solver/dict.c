@@ -11,7 +11,7 @@ struct elt {
     char *key;
 };
 
-struct dict {
+struct hashTable {
     int size;           /* size of the pointer table */
     int n;              /* number of elements stored */
     struct elt **table;
@@ -21,11 +21,11 @@ struct dict {
 #define GROWTH_FACTOR (2)
 #define MAX_LOAD_FACTOR (0.7)
 
-/* dictionary initialization code used in both DictCreate and grow */
-Dict
-internalDictCreate(int size)
+/* hash table initialization code used in both HashTableCreate and grow */
+HashTable
+internalHashTableCreate(int size)
 {
-    Dict d;
+    HashTable d;
     int i;
 
     d = malloc(sizeof(*d));
@@ -43,14 +43,14 @@ internalDictCreate(int size)
     return d;
 }
 
-Dict
-DictCreate(void)
+HashTable
+HashTableCreate(void)
 {
-    return internalDictCreate(INITIAL_SIZE);
+    return internalHashTableCreate(INITIAL_SIZE);
 }
 
 void
-DictDestroy(Dict d)
+HashTableDestroy(HashTable d)
 {
     int i;
     struct elt *e;
@@ -87,38 +87,38 @@ hash_function(const char *s)
 }
 
 static void
-grow(Dict d)
+grow(HashTable d)
 {
-    Dict d2;            /* new dictionary we'll create */
-    struct dict swap;   /* temporary structure for brain transplant */
+    HashTable d2;            /* new hash table we'll create */
+    struct hashTable swap;   /* temporary structure for brain transplant */
     int i;
     struct elt *e;
 
-    d2 = internalDictCreate(d->size * GROWTH_FACTOR);
+    d2 = internalHashTableCreate(d->size * GROWTH_FACTOR);
 
     for(i = 0; i < d->size; i++) {
         for(e = d->table[i]; e != 0; e = e->next) {
             /* note: this recopies everything */
             /* a more efficient implementation would
-             * patch out the strdups inside DictInsert
+             * patch out the strdups inside HashTableInsert
              * to avoid this problem */
-            DictInsert(d2, e->key);
+            HashTableInsert(d2, e->key);
         }
     }
 
     /* the hideous part */
     /* We'll swap the guts of d and d2 */
-    /* then call DictDestroy on d2 */
+    /* then call HashTableDestroy on d2 */
     swap = *d;
     *d = *d2;
     *d2 = swap;
 
-    DictDestroy(d2);
+    HashTableDestroy(d2);
 }
 
-/* insert a new key-value pair into an existing dictionary */
+/* insert a new key-value pair into an existing hash table */
 void
-DictInsert(Dict d, const char *key)
+HashTableInsert(HashTable d, const char *key)
 {
     struct elt *e;
     unsigned long h;
@@ -146,7 +146,7 @@ DictInsert(Dict d, const char *key)
 
 /* return true if matching key is present else false */
 bool
-DictSearch(Dict d, const char *key)
+HashTableSearch(HashTable d, const char *key)
 {
     struct elt *e;
     for(e = d->table[hash_function(key) % d->size]; e != 0; e = e->next) {
@@ -160,28 +160,3 @@ DictSearch(Dict d, const char *key)
 
     return false;
 }
-
-/* delete the most recently inserted record with the given key */
-/* if there is no such record, has no effect */
-void
-DictDelete(Dict d, const char *key)
-{
-    struct elt **prev;          /* what to change when elt is deleted */
-    struct elt *e;              /* what to delete */
-
-    for(prev = &(d->table[hash_function(key) % d->size]); 
-        *prev != 0; 
-        prev = &((*prev)->next)) {
-        if(!strcmp((*prev)->key, key)) {
-            /* got it */
-            e = *prev;
-            *prev = e->next;
-
-            free(e->key);
-            free(e);
-
-            return;
-        }
-    }
-}
-
