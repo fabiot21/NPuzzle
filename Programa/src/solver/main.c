@@ -61,11 +61,11 @@ int main(int argc, char** argv)
 	int matrix[dim][dim];
 
 	i = 0;
-	while (!feof(input_file)) {
+	while (i < dim) {
 		fscanf(input_file, "%s", help);
 		token = strtok(help, ",");
 		j = 0;
-		while(token != NULL) {
+		while(j < dim) {
 			matrix[i][j] = atoi(token);
 			if (matrix[i][j] == 0) {
 				blank_x = j;
@@ -105,5 +105,8 @@ int main(int argc, char** argv)
 		fclose(output_file);
 		printf("STEPS: %d\n", steps);
 	}
+
+	HashTableDestroy(hashTable);
+
 	return 0;
 }

@@ -92,7 +92,7 @@ node_t* bfs(HashTable hashTable, int matrix[dim][dim], int blank_x, int blank_y)
 {
 	queue *open = malloc(sizeof(queue));
 	open -> size = 0;
-	char initState[dim*dim+1];
+	char initState[dim * dim + 1];
 	matrixToString(initState, matrix);
 	node_t *startingNode = malloc(sizeof(node_t));
 	startingNode -> parent = NULL;
